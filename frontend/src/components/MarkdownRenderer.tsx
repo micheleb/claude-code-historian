@@ -13,7 +13,7 @@ interface MarkdownRendererProps {
 
 export function MarkdownRenderer({ content, className, isUserMessage = false }: MarkdownRendererProps) {
   return (
-    <div className={cn("prose prose-sm max-w-none text-inherit", className)}>
+    <div className={cn("prose prose-sm max-w-none text-inherit prose-pre:m-0", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -28,12 +28,11 @@ export function MarkdownRenderer({ content, className, isUserMessage = false }: 
                   style={isUserMessage ? oneLight : oneDark}
                   language={language}
                   PreTag="div"
-                  className="rounded-md !mt-2 !mb-2"
+                  className="rounded-md overflow-hidden"
                   customStyle={{
                     margin: 0,
                     fontSize: '0.75rem',
                     lineHeight: '1.25rem',
-                    backgroundColor: 'transparent',
                   }}
                   {...props}
                 >

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { extractToolIcon, cn } from '../lib/utils';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import type { ToolUse } from '../lib/api';
@@ -67,16 +69,20 @@ function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: Tool
             <div className="text-xs font-medium opacity-80 mb-1">
               Input Parameters
             </div>
-            <div className={cn(
-              "rounded p-2 text-xs font-mono",
-              isUserMessage
-                ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                : "bg-black bg-opacity-20 text-inherit"
-            )}>
-              <pre className="whitespace-pre-wrap overflow-x-auto">
-                {JSON.stringify(JSON.parse(tool.input), null, 2)}
-              </pre>
-            </div>
+            <SyntaxHighlighter
+              style={isUserMessage ? oneLight : oneDark}
+              language="json"
+              PreTag="div"
+              className="rounded-md overflow-hidden"
+              customStyle={{
+                margin: 0,
+                fontSize: '0.75rem',
+                lineHeight: '1.25rem',
+                padding: '0.75rem',
+              }}
+            >
+              {JSON.stringify(JSON.parse(tool.input), null, 2)}
+            </SyntaxHighlighter>
           </div>
 
           {/* Tool Result Section */}
