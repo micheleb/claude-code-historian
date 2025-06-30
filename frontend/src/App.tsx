@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useParams, Link } from 'react-router-dom';
 import { ProjectList } from './components/ProjectList';
 import { ConversationList } from './components/ConversationList';
 import { ConversationView } from './components/ConversationView';
 import { SearchBar } from './components/SearchBar';
+import { SearchResults } from './components/SearchResults';
 import { MessageSquare, RefreshCw } from 'lucide-react';
 import { decodePath, isValidPath, isValidSessionId } from './lib/urlUtils';
 import { syncLogs } from './lib/api';
@@ -163,16 +164,22 @@ function App() {
           {/* Header */}
           <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <MessageSquare size={24} className="text-blue-600" />
-                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              <Link 
+                to="/" 
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer group"
+              >
+                <MessageSquare 
+                  size={24} 
+                  className="text-blue-600 group-hover:text-blue-700 transition-colors" 
+                />
+                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
                   Claude Code Historian
                 </h1>
-              </div>
+              </Link>
               <div className="flex items-center gap-4">
                 <RefreshButton />
                 <div className="w-96">
-                  <SearchBar onSearch={(query) => console.log('Search:', query)} />
+                  <SearchBar />
                 </div>
               </div>
             </div>
@@ -181,6 +188,7 @@ function App() {
           {/* Main Content with Routes */}
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/search" element={<SearchResults />} />
             <Route path="/projects/:projectPath" element={<ProjectPage />} />
             <Route path="/projects/:projectPath/conversations/:sessionId" element={<ConversationPage />} />
           </Routes>

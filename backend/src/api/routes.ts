@@ -119,7 +119,7 @@ app.get('/api/search', (c) => {
   const db = getDatabase();
   
   let sql = `
-    SELECT m.*, c.session_id, p.name as project_name, p.id as project_id,
+    SELECT m.*, c.session_id, p.name as project_name, p.path as project_path, p.id as project_id,
     snippet(messages_fts, -1, '<mark>', '</mark>', '...', 32) as snippet
     FROM messages_fts
     JOIN messages m ON messages_fts.rowid = m.id

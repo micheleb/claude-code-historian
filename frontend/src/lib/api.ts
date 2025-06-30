@@ -56,6 +56,7 @@ export interface ConversationWithMessages extends Conversation {
 export interface SearchResult extends Message {
   session_id: string;
   project_name: string;
+  project_path: string;
   project_id: number;
   snippet: string;
 }
