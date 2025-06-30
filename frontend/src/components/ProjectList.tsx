@@ -1,7 +1,6 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getProjects } from '../lib/api';
+import { getProjects, type Project } from '../lib/api';
 import { FolderOpen, MessageSquare } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { encodePath, decodePath } from '../lib/urlUtils';
@@ -16,7 +15,7 @@ export function ProjectList() {
 
   const selectedProjectPath = encodedProjectPath ? decodePath(encodedProjectPath) : null;
 
-  const handleProjectClick = (project: any) => {
+  const handleProjectClick = (project: Project) => {
     // Use Claude path directly, just URL encode it
     const encodedPath = encodePath(project.path);
     navigate(`/projects/${encodedPath}`);

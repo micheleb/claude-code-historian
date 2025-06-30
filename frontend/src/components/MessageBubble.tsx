@@ -1,4 +1,3 @@
-import React from 'react';
 import { formatShortDate, cn } from '../lib/utils';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import type { Message } from '../lib/api';

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { MessageBubble } from './MessageBubble';
@@ -91,13 +91,13 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 relative">
         <div className="max-w-4xl mx-auto">
           {conversation.messages.map((message) => (
-            <React.Fragment key={message.id}>
+            <Fragment key={message.id}>
               <MessageBubble message={message} />
               {/* Show tools bubble after assistant messages that have tools */}
               {message.type === 'assistant' && message.tool_uses && message.tool_uses.length > 0 && (
                 <ToolsBubble tools={message.tool_uses} />
               )}
-            </React.Fragment>
+            </Fragment>
           ))}
           <div ref={messagesEndRef} />
         </div>

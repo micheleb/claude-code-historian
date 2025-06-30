@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -8,7 +8,6 @@ import type { ToolUse } from '../lib/api';
 
 interface ToolsBubbleProps {
   tools: ToolUse[];
-  isUserMessage?: boolean;
 }
 
 interface ToolItemProps {
@@ -118,7 +117,7 @@ function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: Tool
   );
 }
 
-export function ToolsBubble({ tools, isUserMessage = false }: ToolsBubbleProps) {
+export function ToolsBubble({ tools }: ToolsBubbleProps) {
   const [allExpanded, setAllExpanded] = useState(false);
 
   if (!tools || tools.length === 0) {

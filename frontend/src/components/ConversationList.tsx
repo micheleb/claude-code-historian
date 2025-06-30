@@ -1,7 +1,6 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { getProjectConversationsByPath } from '../lib/api';
+import { getProjectConversationsByPath, type Conversation } from '../lib/api';
 import { formatRelativeDate, formatTimeRange, cn } from '../lib/utils';
 import { MessageCircle, Clock } from 'lucide-react';
 import { encodePath } from '../lib/urlUtils';
@@ -23,7 +22,7 @@ export function ConversationList({
     enabled: !!projectPath,
   });
 
-  const handleConversationClick = (conversation: any) => {
+  const handleConversationClick = (conversation: Conversation) => {
     const encodedProjectPath = encodePath(projectPath);
     navigate(`/projects/${encodedProjectPath}/conversations/${conversation.session_id}`);
   };
