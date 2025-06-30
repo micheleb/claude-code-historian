@@ -90,15 +90,23 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
       {/* Messages */}
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 relative">
         <div className="max-w-4xl mx-auto">
-          {conversation.messages.map((message) => (
-            <Fragment key={message.id}>
-              <MessageBubble message={message} />
-              {/* Show tools bubble after assistant messages that have tools */}
-              {message.type === 'assistant' && message.tool_uses && message.tool_uses.length > 0 && (
-                <ToolsBubble tools={message.tool_uses} />
-              )}
-            </Fragment>
-          ))}
+          {conversation.messages.map((message) => {
+            // Skip MessageBubble for tool-only assistant messages (empty content but has tools)
+            const isToolOnlyMessage = message.type === 'assistant' && 
+                                     message.content.trim() === '' && 
+                                     message.tool_uses && 
+                                     message.tool_uses.length > 0;
+            
+            return (
+              <Fragment key={message.id}>
+                {!isToolOnlyMessage && <MessageBubble message={message} />}
+                {/* Show tools bubble after assistant messages that have tools */}
+                {message.type === 'assistant' && message.tool_uses && message.tool_uses.length > 0 && (
+                  <ToolsBubble tools={message.tool_uses} />
+                )}
+              </Fragment>
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
         <ScrollToTopButton scrollContainerRef={messagesContainerRef} />
