@@ -1,12 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useTransition } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { MessageBubble } from './MessageBubble';
 import { ToolsBubble } from './ToolsBubble';
 import { ScrollToTopButton } from './ScrollToTopButton';
 import { getConversationBySessionId } from '../lib/api';
 import { formatDate } from '../lib/utils';
-import { MessageCircle, Clock, ChevronLeft } from 'lucide-react';
+import { triggerGlobalExpandAtom, isGlobalLoadingAtom } from '../stores/expandCollapseStore';
+import { MessageCircle, Clock, ChevronLeft, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 
 interface ConversationViewProps {
   sessionId: string;
@@ -18,6 +20,11 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
   const { projectPath: encodedProjectPath } = useParams<{ projectPath: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Jotai atoms for expand/collapse functionality
+  const triggerGlobalExpand = useSetAtom(triggerGlobalExpandAtom);
+  const isGlobalLoading = useAtomValue(isGlobalLoadingAtom);
+  const [isPending, startTransition] = useTransition();
   
   // Extract target message from URL hash
   const targetMessageId = location.hash.replace('#message-', '');
@@ -80,8 +87,20 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
     }
   };
 
+  const handleExpandAll = () => {
+    startTransition(() => {
+      triggerGlobalExpand('expand');
+    });
+  };
+
+  const handleCollapseAll = () => {
+    startTransition(() => {
+      triggerGlobalExpand('collapse');
+    });
+  };
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" data-testid="conversation-view">
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-2 mb-2">
@@ -102,6 +121,34 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
           <div className="flex items-center gap-1">
             <MessageCircle size={14} />
             <span>{conversation.messages.length} messages</span>
+          </div>
+          
+          {/* Expand/Collapse All Buttons */}
+          <div className="flex items-center gap-2 ml-2">
+            <button
+              onClick={handleExpandAll}
+              disabled={isGlobalLoading || isPending}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGlobalLoading || isPending ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <ChevronDown size={12} />
+              )}
+              Expand All
+            </button>
+            <button
+              onClick={handleCollapseAll}
+              disabled={isGlobalLoading || isPending}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGlobalLoading || isPending ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <ChevronUp size={12} />
+              )}
+              Collapse All
+            </button>
           </div>
         </div>
         
@@ -127,7 +174,10 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
                 {!isToolOnlyMessage && <MessageBubble message={message} />}
                 {/* Show tools bubble after assistant messages that have tools */}
                 {message.type === 'assistant' && message.tool_uses && message.tool_uses.length > 0 && (
-                  <ToolsBubble tools={message.tool_uses} />
+                  <ToolsBubble 
+                    key={`tools-${message.uuid}`}
+                    tools={message.tool_uses}
+                  />
                 )}
               </div>
             );

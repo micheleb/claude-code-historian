@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useAtomValue } from 'jotai';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { extractToolIcon, cn } from '../lib/utils';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { globalExpandActionAtom } from '../stores/expandCollapseStore';
 import type { ToolUse } from '../lib/api';
 
 interface TodoItem {
@@ -21,10 +23,11 @@ interface ToolItemProps {
   tool: ToolUse;
   isUserMessage?: boolean;
   forceExpanded?: boolean;
+  forceCollapsed?: boolean;
   onToggle?: (expanded: boolean) => void;
 }
 
-function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: ToolItemProps) {
+function ToolItem({ tool, isUserMessage = false, forceExpanded, forceCollapsed, onToggle }: ToolItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [resultExpanded, setResultExpanded] = useState(false);
 
@@ -46,12 +49,18 @@ function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: Tool
     return null;
   };
 
-  // Sync with parent's expand all state
+  // Sync with parent's force expand/collapse state
   useEffect(() => {
-    if (forceExpanded !== undefined) {
-      setExpanded(forceExpanded);
+    if (forceExpanded === true) {
+      setExpanded(true);
     }
   }, [forceExpanded]);
+
+  useEffect(() => {
+    if (forceCollapsed === true) {
+      setExpanded(false);
+    }
+  }, [forceCollapsed]);
 
   const handleToggle = () => {
     const newExpanded = !expanded;
@@ -76,8 +85,9 @@ function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: Tool
             ? "hover:bg-gray-200 dark:hover:bg-gray-600" 
             : "hover:bg-white hover:bg-opacity-10"
         )}
+        data-testid="tool-toggle-button"
       >
-        {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        {expanded ? <ChevronDown size={16} data-testid="chevron-down" /> : <ChevronRight size={16} data-testid="chevron-right" />}
         <span className="text-lg">{extractToolIcon(tool.tool_name)}</span>
         <span className="font-medium">{tool.tool_name}</span>
         <span className="text-xs opacity-70 ml-auto">
@@ -169,22 +179,40 @@ function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: Tool
 }
 
 export function ToolsBubble({ tools }: ToolsBubbleProps) {
-  const [allExpanded, setAllExpanded] = useState(false);
+  const [localForceExpanded, setLocalForceExpanded] = useState(false);
+  const [localForceCollapsed, setLocalForceCollapsed] = useState(false);
+  const [lastGlobalTimestamp, setLastGlobalTimestamp] = useState<number>(0);
+  
+  // Subscribe to global expand/collapse actions
+  const globalAction = useAtomValue(globalExpandActionAtom);
+
+  // React to global expand/collapse actions (only once per timestamp)
+  useEffect(() => {
+    if (globalAction && globalAction.timestamp > lastGlobalTimestamp) {
+      if (globalAction.action === 'expand') {
+        setLocalForceExpanded(true);
+        setTimeout(() => setLocalForceExpanded(false), 100);
+      } else {
+        setLocalForceCollapsed(true);
+        setTimeout(() => setLocalForceCollapsed(false), 100);
+      }
+      setLastGlobalTimestamp(globalAction.timestamp);
+    }
+  }, [globalAction, lastGlobalTimestamp]);
 
   if (!tools || tools.length === 0) {
     return null;
   }
 
-  const handleToggleAll = () => {
-    setAllExpanded(!allExpanded);
+  // Individual ToolsBubble toggle - uses same pattern as global
+  const handleExpandAll = () => {
+    setLocalForceExpanded(true);
+    setTimeout(() => setLocalForceExpanded(false), 100);
   };
 
-  const handleToolToggle = (expanded: boolean) => {
-    // If user manually collapses any tool while "all expanded" is active, 
-    // reset the "expand all" state
-    if (allExpanded && !expanded) {
-      setAllExpanded(false);
-    }
+  const handleCollapseAll = () => {
+    setLocalForceCollapsed(true);
+    setTimeout(() => setLocalForceCollapsed(false), 100);
   };
 
   return (
@@ -203,12 +231,20 @@ export function ToolsBubble({ tools }: ToolsBubbleProps) {
             <span className="font-medium">Tools Used</span>
             <span className="text-xs opacity-70">({tools.length})</span>
           </div>
-          <button
-            onClick={handleToggleAll}
-            className="text-xs opacity-80 hover:opacity-100 transition-opacity"
-          >
-            {allExpanded ? 'Collapse All' : 'Expand All'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExpandAll}
+              className="text-xs opacity-80 hover:opacity-100 transition-opacity"
+            >
+              Expand All
+            </button>
+            <button
+              onClick={handleCollapseAll}
+              className="text-xs opacity-80 hover:opacity-100 transition-opacity"
+            >
+              Collapse All
+            </button>
+          </div>
         </div>
 
         {/* Tools List */}
@@ -218,8 +254,8 @@ export function ToolsBubble({ tools }: ToolsBubbleProps) {
               key={tool.id} 
               tool={tool} 
               isUserMessage={false} // Tools bubble always has dark background
-              forceExpanded={allExpanded}
-              onToggle={handleToolToggle}
+              forceExpanded={localForceExpanded}
+              forceCollapsed={localForceCollapsed}
             />
           ))}
         </div>
