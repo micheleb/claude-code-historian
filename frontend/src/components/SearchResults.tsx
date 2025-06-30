@@ -18,9 +18,9 @@ export function SearchResults() {
   });
 
   const handleResultClick = (result: SearchResult) => {
-    // Navigate to the specific conversation
+    // Navigate to the specific conversation with message targeting
     const encodedProjectPath = encodePath(result.project_path || '');
-    navigate(`/projects/${encodedProjectPath}/conversations/${result.session_id}`);
+    navigate(`/projects/${encodedProjectPath}/conversations/${result.session_id}#message-${result.uuid}`);
   };
 
   if (!query.trim()) {

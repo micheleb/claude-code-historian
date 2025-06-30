@@ -143,6 +143,7 @@ export function MarkdownRenderer({ content, className, isUserMessage = false }: 
             </em>
           ),
           
+          
           // Tables
           table: ({ children, ...props }) => (
             <div className="overflow-x-auto mb-2">

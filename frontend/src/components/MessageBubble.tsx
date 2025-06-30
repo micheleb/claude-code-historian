@@ -9,6 +9,16 @@ interface MessageBubbleProps {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.type === 'user';
 
+  const handleTimestampClick = () => {
+    // Update URL hash to this message
+    const currentUrl = new URL(window.location.href);
+    currentUrl.hash = `message-${message.uuid}`;
+    window.history.replaceState({}, '', currentUrl.toString());
+    
+    // Optionally, copy link to clipboard
+    navigator.clipboard.writeText(currentUrl.toString());
+  };
+
   return (
     <div className={cn(
       "flex w-full mb-4",
@@ -24,13 +34,17 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           <span className="text-xs font-medium opacity-75">
             {isUser ? 'You' : `Claude`}
           </span>
-          <span className="text-xs opacity-60">
+          <button 
+            onClick={handleTimestampClick}
+            className="text-xs opacity-60 hover:opacity-100 hover:underline cursor-pointer transition-opacity"
+            title="Click to copy link to this message"
+          >
             {formatShortDate(message.timestamp)}
-          </span>
+          </button>
         </div>
         
         <MarkdownRenderer 
-          content={message.content} 
+          content={message.content}
           isUserMessage={isUser}
           className="text-inherit"
         />

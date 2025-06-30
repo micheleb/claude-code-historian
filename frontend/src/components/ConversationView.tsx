@@ -1,6 +1,6 @@
-import { useEffect, useRef, Fragment } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { MessageBubble } from './MessageBubble';
 import { ToolsBubble } from './ToolsBubble';
 import { ScrollToTopButton } from './ScrollToTopButton';
@@ -14,9 +14,13 @@ interface ConversationViewProps {
 
 export function ConversationView({ sessionId }: ConversationViewProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projectPath: encodedProjectPath } = useParams<{ projectPath: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Extract target message from URL hash
+  const targetMessageId = location.hash.replace('#message-', '');
   
   const { data: conversation, isLoading, error } = useQuery({
     queryKey: ['conversation', sessionId],
@@ -24,8 +28,29 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
   });
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversation?.messages]);
+    if (!conversation?.messages) return;
+    
+    // If there's a target message, scroll to it
+    if (targetMessageId) {
+      setTimeout(() => {
+        const targetElement = document.getElementById(`message-${targetMessageId}`);
+        if (targetElement) {
+          targetElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          // Brief highlight animation
+          targetElement.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+          setTimeout(() => {
+            targetElement.style.backgroundColor = '';
+          }, 2000);
+        }
+      }, 100);
+    } else {
+      // Default behavior: scroll to bottom
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [conversation?.messages, targetMessageId]);
 
   if (isLoading) {
     return (
@@ -98,13 +123,13 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
                                      message.tool_uses.length > 0;
             
             return (
-              <Fragment key={message.id}>
+              <div key={message.id} id={`message-${message.uuid}`} className="scroll-mt-4">
                 {!isToolOnlyMessage && <MessageBubble message={message} />}
                 {/* Show tools bubble after assistant messages that have tools */}
                 {message.type === 'assistant' && message.tool_uses && message.tool_uses.length > 0 && (
                   <ToolsBubble tools={message.tool_uses} />
                 )}
-              </Fragment>
+              </div>
             );
           })}
           <div ref={messagesEndRef} />
