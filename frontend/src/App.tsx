@@ -5,7 +5,7 @@ import { ConversationList } from './components/ConversationList';
 import { ConversationView } from './components/ConversationView';
 import { SearchBar } from './components/SearchBar';
 import { SearchResults } from './components/SearchResults';
-import { MessageSquare, RefreshCw } from 'lucide-react';
+import { Clock, RefreshCw } from 'lucide-react';
 import { decodePath, isValidPath, isValidSessionId } from './lib/urlUtils';
 import { syncLogs } from './lib/api';
 import { useState } from 'react';
@@ -54,7 +54,7 @@ function RefreshButton() {
           status === 'success' ? 'text-green-600' : status === 'error' ? 'text-red-600' : ''
         }`} 
       />
-      {isLoading ? 'Syncing...' : status === 'success' ? 'Synced!' : status === 'error' ? 'Failed' : 'Refresh'}
+      {isLoading ? 'Syncing...' : status === 'success' ? 'Synced!' : status === 'error' ? 'Failed' : 'Resync'}
     </button>
   );
 }
@@ -71,7 +71,7 @@ function HomePage() {
       {/* Empty state */}
       <div className="flex-1 bg-white dark:bg-gray-800">
         <div className="h-full flex flex-col items-center justify-center text-gray-500 bg-gray-50 dark:bg-gray-900">
-          <MessageSquare size={48} className="mb-4 opacity-50" />
+          <Clock size={48} className="mb-4 opacity-50" />
           <p className="text-lg font-medium">Select a project to get started</p>
           <p className="text-sm opacity-70 mt-1">Browse through your Claude Code projects</p>
         </div>
@@ -109,7 +109,7 @@ function ProjectPage() {
       {/* Empty state */}
       <div className="flex-1 bg-white dark:bg-gray-800">
         <div className="h-full flex flex-col items-center justify-center text-gray-500 bg-gray-50 dark:bg-gray-900">
-          <MessageSquare size={48} className="mb-4 opacity-50" />
+          <Clock size={48} className="mb-4 opacity-50" />
           <p className="text-lg font-medium">Select a conversation to view</p>
           <p className="text-sm opacity-70 mt-1">Choose from the conversation list to see your chat history</p>
         </div>
@@ -168,7 +168,7 @@ function App() {
                 to="/" 
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer group"
               >
-                <MessageSquare 
+                <Clock 
                   size={24} 
                   className="text-blue-600 group-hover:text-blue-700 transition-colors" 
                 />
