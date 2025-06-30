@@ -8,6 +8,24 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.type === 'user';
+  
+  // Detect command messages (first message with command tags)
+  const isCommandMessage = message.parent_uuid === null && 
+    message.content.includes('<command-message>') && 
+    message.content.includes('<command-name>');
+  
+  // Extract command info if it's a command message
+  const getCommandInfo = () => {
+    if (!isCommandMessage) return null;
+    
+    const commandMessageMatch = message.content.match(/<command-message>(.*?)<\/command-message>/);
+    const commandNameMatch = message.content.match(/<command-name>(.*?)<\/command-name>/);
+    
+    return {
+      commandMessage: commandMessageMatch?.[1] || '',
+      commandName: commandNameMatch?.[1] || ''
+    };
+  };
 
   const handleTimestampClick = () => {
     // Update URL hash to this message
@@ -43,11 +61,22 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </button>
         </div>
         
-        <MarkdownRenderer 
-          content={message.content}
-          isUserMessage={isUser}
-          className="text-inherit"
-        />
+{isCommandMessage ? (
+          <div>
+            <div className="font-semibold mb-1">
+              Run {getCommandInfo()?.commandName}
+            </div>
+            <div className="text-inherit">
+              {getCommandInfo()?.commandMessage}
+            </div>
+          </div>
+        ) : (
+          <MarkdownRenderer 
+            content={message.content}
+            isUserMessage={isUser}
+            className="text-inherit"
+          />
+        )}
       </div>
     </div>
   );
