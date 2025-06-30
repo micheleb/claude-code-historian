@@ -6,6 +6,13 @@ interface MessageBubbleProps {
   message: Message;
 }
 
+interface TodoItem {
+  id: string;
+  content: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+}
+
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.type === 'user';
   
@@ -13,6 +20,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const isCommandMessage = message.parent_uuid === null && 
     message.content.includes('<command-message>') && 
     message.content.includes('<command-name>');
+  
+  // Detect TodoWrite messages (JSON with todos array)
+  const isTodoWriteMessage = message.content.includes('"todos"') && 
+    message.content.includes('[') && 
+    message.content.includes(']');
   
   // Extract command info if it's a command message
   const getCommandInfo = () => {
@@ -25,6 +37,25 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       commandMessage: commandMessageMatch?.[1] || '',
       commandName: commandNameMatch?.[1] || ''
     };
+  };
+
+  // Parse todo data from TodoWrite JSON
+  const parseTodoData = (): TodoItem[] | null => {
+    if (!isTodoWriteMessage) return null;
+    
+    try {
+      // Try to extract JSON from the message content
+      const jsonMatch = message.content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return null;
+      
+      const jsonData = JSON.parse(jsonMatch[0]);
+      if (jsonData.todos && Array.isArray(jsonData.todos)) {
+        return jsonData.todos as TodoItem[];
+      }
+    } catch (error) {
+      console.warn('Failed to parse TodoWrite JSON:', error);
+    }
+    return null;
   };
 
   const handleTimestampClick = () => {
@@ -61,7 +92,30 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </button>
         </div>
         
-{isCommandMessage ? (
+{isTodoWriteMessage ? (
+          <div>
+            <div className="font-semibold mb-2 text-inherit">
+              Todo List
+            </div>
+            <div className="space-y-1">
+              {parseTodoData()?.map((todo: TodoItem) => (
+                <div key={todo.id} className="flex items-start gap-2 text-sm">
+                  <span className="text-inherit mt-0.5">
+                    {todo.status === 'completed' ? '☑' : 
+                     todo.status === 'in_progress' ? '◐' : '☐'}
+                  </span>
+                  <span className={cn(
+                    "text-inherit flex-1",
+                    todo.status === 'completed' && "line-through opacity-75",
+                    todo.status === 'in_progress' && "font-semibold"
+                  )}>
+                    {todo.content}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : isCommandMessage ? (
           <div>
             <div className="font-semibold mb-1">
               Run {getCommandInfo()?.commandName}

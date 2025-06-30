@@ -6,6 +6,13 @@ import { extractToolIcon, cn } from '../lib/utils';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import type { ToolUse } from '../lib/api';
 
+interface TodoItem {
+  id: string;
+  content: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  priority: 'low' | 'medium' | 'high';
+}
+
 interface ToolsBubbleProps {
   tools: ToolUse[];
 }
@@ -20,6 +27,24 @@ interface ToolItemProps {
 function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: ToolItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [resultExpanded, setResultExpanded] = useState(false);
+
+  // Check if this is a TodoWrite tool
+  const isTodoWrite = tool.tool_name === 'TodoWrite';
+  
+  // Parse TodoWrite input data
+  const parseTodoData = (): TodoItem[] | null => {
+    if (!isTodoWrite) return null;
+    
+    try {
+      const inputData = JSON.parse(tool.input);
+      if (inputData.todos && Array.isArray(inputData.todos)) {
+        return inputData.todos as TodoItem[];
+      }
+    } catch (error) {
+      console.warn('Failed to parse TodoWrite input:', error);
+    }
+    return null;
+  };
 
   // Sync with parent's expand all state
   useEffect(() => {
@@ -63,26 +88,52 @@ function ToolItem({ tool, isUserMessage = false, forceExpanded, onToggle }: Tool
       {/* Tool Content - Collapsible */}
       {expanded && (
         <div className="px-3 pb-3 space-y-2">
-          {/* Tool Input Section - Always Visible */}
-          <div>
-            <div className="text-xs font-medium opacity-80 mb-1">
-              Input Parameters
+          {/* Special rendering for TodoWrite */}
+          {isTodoWrite ? (
+            <div>
+              <div className="text-xs font-medium opacity-80 mb-2">
+                Todo List
+              </div>
+              <div className="space-y-1">
+                {parseTodoData()?.map((todo: TodoItem) => (
+                  <div key={todo.id} className="flex items-start gap-2 text-sm">
+                    <span className="mt-0.5">
+                      {todo.status === 'completed' ? '☑' : 
+                       todo.status === 'in_progress' ? '◐' : '☐'}
+                    </span>
+                    <span className={cn(
+                      "flex-1",
+                      todo.status === 'completed' && "line-through opacity-75",
+                      todo.status === 'in_progress' && "font-semibold"
+                    )}>
+                      {todo.content}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <SyntaxHighlighter
-              style={isUserMessage ? oneLight : oneDark}
-              language="json"
-              PreTag="div"
-              className="rounded-md overflow-hidden"
-              customStyle={{
-                margin: 0,
-                fontSize: '0.75rem',
-                lineHeight: '1.25rem',
-                padding: '0.75rem',
-              }}
-            >
-              {JSON.stringify(JSON.parse(tool.input), null, 2)}
-            </SyntaxHighlighter>
-          </div>
+          ) : (
+            /* Regular tool input for non-TodoWrite tools */
+            <div>
+              <div className="text-xs font-medium opacity-80 mb-1">
+                Input Parameters
+              </div>
+              <SyntaxHighlighter
+                style={isUserMessage ? oneLight : oneDark}
+                language="json"
+                PreTag="div"
+                className="rounded-md overflow-hidden"
+                customStyle={{
+                  margin: 0,
+                  fontSize: '0.75rem',
+                  lineHeight: '1.25rem',
+                  padding: '0.75rem',
+                }}
+              >
+                {JSON.stringify(JSON.parse(tool.input), null, 2)}
+              </SyntaxHighlighter>
+            </div>
+          )}
 
           {/* Tool Result Section */}
           {tool.result && (
