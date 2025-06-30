@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MessageBubble } from './MessageBubble';
 import { ToolsBubble } from './ToolsBubble';
+import { ScrollToTopButton } from './ScrollToTopButton';
 import { getConversation } from '../lib/api';
 import { formatDate } from '../lib/utils';
 import { MessageCircle, Clock, ChevronLeft } from 'lucide-react';
@@ -13,6 +14,7 @@ interface ConversationViewProps {
 
 export function ConversationView({ conversationId, onBack }: ConversationViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   
   const { data: conversation, isLoading, error } = useQuery({
     queryKey: ['conversation', conversationId],
@@ -76,7 +78,7 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 relative">
         <div className="max-w-4xl mx-auto">
           {conversation.messages.map((message) => (
             <React.Fragment key={message.id}>
@@ -89,6 +91,7 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
           ))}
           <div ref={messagesEndRef} />
         </div>
+        <ScrollToTopButton scrollContainerRef={messagesContainerRef} />
       </div>
     </div>
   );
