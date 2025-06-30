@@ -1,25 +1,32 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getProjectConversations } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
+import { getProjectConversationsByPath } from '../lib/api';
 import { formatRelativeDate, formatTimeRange, cn } from '../lib/utils';
 import { MessageCircle, Clock } from 'lucide-react';
+import { encodePath } from '../lib/urlUtils';
 
 interface ConversationListProps {
-  projectId: number;
-  selectedConversationId: number | null;
-  onSelectConversation: (conversationId: number) => void;
+  projectPath: string;
+  selectedSessionId?: string;
 }
 
 export function ConversationList({ 
-  projectId, 
-  selectedConversationId, 
-  onSelectConversation 
+  projectPath, 
+  selectedSessionId 
 }: ConversationListProps) {
+  const navigate = useNavigate();
+  
   const { data: conversations, isLoading } = useQuery({
-    queryKey: ['conversations', projectId],
-    queryFn: () => getProjectConversations(projectId),
-    enabled: !!projectId,
+    queryKey: ['conversations', projectPath],
+    queryFn: () => getProjectConversationsByPath(projectPath),
+    enabled: !!projectPath,
   });
+
+  const handleConversationClick = (conversation: any) => {
+    const encodedProjectPath = encodePath(projectPath);
+    navigate(`/projects/${encodedProjectPath}/conversations/${conversation.session_id}`);
+  };
 
   if (isLoading) {
     return (
@@ -51,11 +58,11 @@ export function ConversationList({
         {conversations.map((conversation) => (
           <button
             key={conversation.id}
-            onClick={() => onSelectConversation(conversation.id)}
+            onClick={() => handleConversationClick(conversation)}
             className={cn(
               "w-full text-left p-3 rounded-lg transition-colors text-gray-900 dark:text-gray-100",
               "hover:bg-gray-100 dark:hover:bg-gray-800",
-              selectedConversationId === conversation.id
+              selectedSessionId === conversation.session_id
                 ? "bg-gray-100 dark:bg-gray-800 border-l-2 border-blue-500"
                 : ""
             )}

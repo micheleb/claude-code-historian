@@ -1,19 +1,26 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getProjects } from '../lib/api';
 import { FolderOpen, MessageSquare } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { encodePath, decodePath } from '../lib/urlUtils';
 
-interface ProjectListProps {
-  selectedProjectId: number | null;
-  onSelectProject: (projectId: number) => void;
-}
-
-export function ProjectList({ selectedProjectId, onSelectProject }: ProjectListProps) {
+export function ProjectList() {
+  const navigate = useNavigate();
+  const { projectPath: encodedProjectPath } = useParams<{ projectPath: string }>();
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: getProjects,
   });
+
+  const selectedProjectPath = encodedProjectPath ? decodePath(encodedProjectPath) : null;
+
+  const handleProjectClick = (project: any) => {
+    // Use Claude path directly, just URL encode it
+    const encodedPath = encodePath(project.path);
+    navigate(`/projects/${encodedPath}`);
+  };
 
   if (isLoading) {
     return (
@@ -38,11 +45,11 @@ export function ProjectList({ selectedProjectId, onSelectProject }: ProjectListP
         {projects?.map((project) => (
           <button
             key={project.id}
-            onClick={() => onSelectProject(project.id)}
+            onClick={() => handleProjectClick(project)}
             className={cn(
               "w-full text-left p-3 rounded-lg transition-colors",
               "hover:bg-gray-100 dark:hover:bg-gray-800",
-              selectedProjectId === project.id
+              selectedProjectPath === project.path
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
                 : "text-gray-900 dark:text-gray-100"
             )}

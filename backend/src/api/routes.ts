@@ -193,4 +193,92 @@ app.get('/api/conversations/by-date', (c) => {
   return c.json(conversations);
 });
 
+// Get project by path (for URL routing)
+app.get('/api/projects/by-path', (c) => {
+  const path = c.req.query('path');
+  
+  if (!path) {
+    return c.json({ error: 'Path parameter required' }, 400);
+  }
+  
+  const db = getDatabase();
+  
+  const project = db.prepare(
+    `SELECT id, path, name, created_at, updated_at,
+     (SELECT COUNT(*) FROM conversations WHERE project_id = projects.id) as conversation_count
+     FROM projects
+     WHERE path = ?`
+  ).get(path);
+  
+  if (!project) {
+    return c.json({ error: 'Project not found' }, 404);
+  }
+  
+  return c.json(project);
+});
+
+// Get conversations for a project by path (for URL routing)
+app.get('/api/projects/by-path/conversations', (c) => {
+  const path = c.req.query('path');
+  
+  if (!path) {
+    return c.json({ error: 'Path parameter required' }, 400);
+  }
+  
+  const db = getDatabase();
+  
+  const conversations = db.prepare(
+    `SELECT c.*, 
+     (SELECT COUNT(*) FROM messages WHERE conversation_id = c.id) as message_count
+     FROM conversations c
+     JOIN projects p ON c.project_id = p.id
+     WHERE p.path = ?
+     ORDER BY c.started_at DESC`
+  ).all(path);
+  
+  return c.json(conversations);
+});
+
+// Get conversation by session_id (for URL routing)
+app.get('/api/conversations/by-session/:sessionId', (c) => {
+  const sessionId = c.req.param('sessionId');
+  const db = getDatabase();
+  
+  const conversation = db.prepare(
+    `SELECT c.*, p.name as project_name, p.path as project_path
+     FROM conversations c
+     JOIN projects p ON c.project_id = p.id
+     WHERE c.session_id = ?`
+  ).get(sessionId);
+  
+  if (!conversation) {
+    return c.json({ error: 'Conversation not found' }, 404);
+  }
+  
+  const messages = db.prepare(
+    `SELECT m.*,
+     (SELECT json_group_array(json_object(
+       'id', id,
+       'tool_id', tool_id,
+       'tool_name', tool_name,
+       'input', input,
+       'result', result
+     )) FROM tool_uses WHERE message_id = m.id) as tool_uses
+     FROM messages m
+     WHERE m.conversation_id = ?
+     ORDER BY m.timestamp ASC`
+  ).all(conversation.id);
+  
+  // Parse tool_uses JSON
+  const parsedMessages = messages.map(msg => ({
+    ...msg,
+    tool_uses: msg.tool_uses ? JSON.parse(msg.tool_uses as string) : []
+  }));
+  
+  return c.json({
+    ...conversation,
+    messages: parsedMessages
+  });
+});
+
 export default app;

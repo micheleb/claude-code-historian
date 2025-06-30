@@ -98,3 +98,16 @@ export const getConversationsByDate = (startDate?: string, endDate?: string, pro
 
 export const getTodos = (sessionId: string) =>
   api.get<Todo[]>(`/todos/${sessionId}`).then(res => res.data);
+
+// URL-based API functions for routing
+export const getProjectByPath = (path: string) =>
+  api.get<Project>('/projects/by-path', { params: { path } }).then(res => res.data);
+
+export const getProjectConversationsByPath = async (path: string) => {
+  // Two-step lookup: first get project ID by path, then get conversations by ID
+  const project = await getProjectByPath(path);
+  return getProjectConversations(project.id);
+};
+
+export const getConversationBySessionId = (sessionId: string) =>
+  api.get<ConversationWithMessages>(`/conversations/by-session/${sessionId}`).then(res => res.data);

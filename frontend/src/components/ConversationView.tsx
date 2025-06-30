@@ -1,24 +1,26 @@
 import React, { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MessageBubble } from './MessageBubble';
 import { ToolsBubble } from './ToolsBubble';
 import { ScrollToTopButton } from './ScrollToTopButton';
-import { getConversation } from '../lib/api';
+import { getConversationBySessionId } from '../lib/api';
 import { formatDate } from '../lib/utils';
 import { MessageCircle, Clock, ChevronLeft } from 'lucide-react';
 
 interface ConversationViewProps {
-  conversationId: number;
-  onBack: () => void;
+  sessionId: string;
 }
 
-export function ConversationView({ conversationId, onBack }: ConversationViewProps) {
+export function ConversationView({ sessionId }: ConversationViewProps) {
+  const navigate = useNavigate();
+  const { projectPath: encodedProjectPath } = useParams<{ projectPath: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   
   const { data: conversation, isLoading, error } = useQuery({
-    queryKey: ['conversation', conversationId],
-    queryFn: () => getConversation(conversationId),
+    queryKey: ['conversation', sessionId],
+    queryFn: () => getConversationBySessionId(sessionId),
   });
 
   useEffect(() => {
@@ -45,13 +47,21 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
     return null;
   }
 
+  const handleBack = () => {
+    if (encodedProjectPath) {
+      navigate(`/projects/${encodedProjectPath}`);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center gap-2 mb-2">
           <button
-            onClick={onBack}
+            onClick={handleBack}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-gray-900 dark:text-gray-100"
           >
             <ChevronLeft size={20} />

@@ -2,7 +2,7 @@ import app from './api/routes';
 
 const port = process.env.PORT || 3001;
 
-console.log(`Claude Log Historian API Server`);
+console.log(`Claude Code Historian API Server`);
 console.log(`==============================`);
 console.log(`Starting server on port ${port}...`);
 
@@ -12,7 +12,7 @@ export default {
 };
 
 console.log(`Server running at http://localhost:${port}`);
-console.log(`\\nAvailable endpoints:`);
+console.log(`Available endpoints:`);
 console.log(`  GET /api/projects`);
 console.log(`  GET /api/projects/:projectId/conversations`);
 console.log(`  GET /api/conversations/:conversationId`);
