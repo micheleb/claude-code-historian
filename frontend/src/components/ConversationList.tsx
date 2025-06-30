@@ -53,7 +53,7 @@ export function ConversationList({
             key={conversation.id}
             onClick={() => onSelectConversation(conversation.id)}
             className={cn(
-              "w-full text-left p-3 rounded-lg transition-colors",
+              "w-full text-left p-3 rounded-lg transition-colors text-gray-900 dark:text-gray-100",
               "hover:bg-gray-100 dark:hover:bg-gray-800",
               selectedConversationId === conversation.id
                 ? "bg-gray-100 dark:bg-gray-800 border-l-2 border-blue-500"
@@ -67,7 +67,7 @@ export function ConversationList({
                     {conversation.summary}
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-500 italic">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 italic">
                     No summary
                   </div>
                 )}

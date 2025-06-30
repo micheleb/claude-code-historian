@@ -59,11 +59,20 @@ function App() {
                 onBack={() => setSelectedConversationId(null)}
               />
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                {selectedProjectId 
-                  ? "Select a conversation to view"
-                  : "Select a project to get started"
-                }
+              <div className="h-full flex flex-col items-center justify-center text-gray-500 bg-gray-50 dark:bg-gray-900">
+                <MessageSquare size={48} className="mb-4 opacity-50" />
+                <p className="text-lg font-medium">
+                  {selectedProjectId 
+                    ? "Select a conversation to view"
+                    : "Select a project to get started"
+                  }
+                </p>
+                <p className="text-sm opacity-70 mt-1">
+                  {selectedProjectId 
+                    ? "Choose from the conversation list to see your chat history"
+                    : "Browse through your Claude Code projects"
+                  }
+                </p>
               </div>
             )}
           </div>

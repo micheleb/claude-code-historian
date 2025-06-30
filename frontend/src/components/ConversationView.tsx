@@ -49,11 +49,11 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
         <div className="flex items-center gap-2 mb-2">
           <button
             onClick={onBack}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-gray-900 dark:text-gray-100"
           >
             <ChevronLeft size={20} />
           </button>
-          <h2 className="text-lg font-semibold flex-1">{conversation.project_name}</h2>
+          <h2 className="text-lg font-semibold flex-1 text-gray-900 dark:text-gray-100">{conversation.project_name}</h2>
         </div>
         
         <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
@@ -75,11 +75,13 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
-        {conversation.messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        <div ref={messagesEndRef} />
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto">
+          {conversation.messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
     </div>
   );

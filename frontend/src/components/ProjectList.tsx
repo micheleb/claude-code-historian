@@ -29,7 +29,7 @@ export function ProjectList({ selectedProjectId, onSelectProject }: ProjectListP
 
   return (
     <div className="p-4">
-      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
         <FolderOpen size={20} />
         Projects
       </h2>
@@ -44,7 +44,7 @@ export function ProjectList({ selectedProjectId, onSelectProject }: ProjectListP
               "hover:bg-gray-100 dark:hover:bg-gray-800",
               selectedProjectId === project.id
                 ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                : ""
+                : "text-gray-900 dark:text-gray-100"
             )}
           >
             <div className="font-medium">{project.name}</div>
