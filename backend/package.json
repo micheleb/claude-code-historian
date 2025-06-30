@@ -6,7 +6,8 @@
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
     "sync": "bun src/sync/index.ts",
-    "wipe-db": "rm claude-logs*"
+    "wipe-db": "rm claude-logs*",
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "latest"

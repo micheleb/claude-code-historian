@@ -140,7 +140,9 @@ export class SyncService {
       
       // If this is not an assistant message, add it as-is
       if (entry.type !== 'assistant') {
-        result.push(entry);
+        if (entry.type === 'user' && !this.isToolCallMessage(entry as UserMessage)) {
+          result.push(entry);
+        }
         i++;
         continue;
       }
@@ -179,7 +181,13 @@ export class SyncService {
         const nextHasTools = nextAssistant.message.content.some(c => c.type === 'tool_use');
         
         if (!nextHasTools) {
-          break; // Assistant message without tools, stop grouping
+          // If it's a thinking-only message, skip it and continue grouping
+          if (this.isThinkingOnlyMessage(nextAssistant)) {
+            j++;
+            continue;
+          }
+          // Otherwise, this assistant message has text content and should break grouping
+          break;
         }
         
         toolGroup.push(nextAssistant);
@@ -193,7 +201,7 @@ export class SyncService {
         // Multiple messages to merge
         const mergedMessage = this.mergeAssistantMessages(toolGroup);
         result.push(mergedMessage);
-        console.log(`Merged ${toolGroup.length} consecutive assistant messages with tools`);
+        console.log(`Merged ${toolGroup.length} consecutive tool messages`);
       }
       
       i = j; // Continue from after the group
@@ -262,10 +270,27 @@ export class SyncService {
     return false;
   }
 
+  private isThinkingOnlyMessage(entry: AssistantMessage): boolean {
+    // Check if this assistant message contains only thinking content
+    if (entry.type !== 'assistant') return false;
+    
+    const content = entry.message.content;
+    if (!Array.isArray(content) || content.length === 0) return false;
+    
+    // Check if all content items are thinking type
+    const hasOnlyThinking = content.every(item => item.type === 'thinking');
+    return hasOnlyThinking;
+  }
+
   private async insertMessage(entry: UserMessage | AssistantMessage, conversationId: number) {
     // Skip tool call user messages
     if (entry.type === 'user' && this.isToolCallMessage(entry as UserMessage)) {
       console.log(`Skipping tool call message: ${entry.uuid}`);
+      return;
+    }
+    
+    // Skip thinking-only assistant messages
+    if (entry.type === 'assistant' && this.isThinkingOnlyMessage(entry as AssistantMessage)) {
       return;
     }
     

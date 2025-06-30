@@ -57,7 +57,7 @@ app.get('/api/conversations/:conversationId/messages', (c) => {
   ).all(conversationId);
   
   // Parse tool_uses JSON
-  const parsedMessages = messages.map(msg => ({
+  const parsedMessages = messages.map((msg: any) => ({
     ...msg,
     tool_uses: msg.tool_uses ? JSON.parse(msg.tool_uses as string) : []
   }));
@@ -96,7 +96,7 @@ app.get('/api/conversations/:conversationId', (c) => {
   ).all(conversationId);
   
   // Parse tool_uses JSON
-  const parsedMessages = messages.map(msg => ({
+  const parsedMessages = messages.map((msg: any) => ({
     ...msg,
     tool_uses: msg.tool_uses ? JSON.parse(msg.tool_uses as string) : []
   }));
@@ -268,10 +268,10 @@ app.get('/api/conversations/by-session/:sessionId', (c) => {
      FROM messages m
      WHERE m.conversation_id = ?
      ORDER BY m.timestamp ASC`
-  ).all(conversation.id);
+  ).all((conversation as any).id);
   
   // Parse tool_uses JSON
-  const parsedMessages = messages.map(msg => ({
+  const parsedMessages = messages.map((msg: any) => ({
     ...msg,
     tool_uses: msg.tool_uses ? JSON.parse(msg.tool_uses as string) : []
   }));

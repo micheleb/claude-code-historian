@@ -231,20 +231,22 @@ export function ToolsBubble({ tools }: ToolsBubbleProps) {
             <span className="font-medium">Tools Used</span>
             <span className="text-xs opacity-70">({tools.length})</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleExpandAll}
-              className="text-xs opacity-80 hover:opacity-100 transition-opacity"
-            >
-              Expand All
-            </button>
-            <button
-              onClick={handleCollapseAll}
-              className="text-xs opacity-80 hover:opacity-100 transition-opacity"
-            >
-              Collapse All
-            </button>
-          </div>
+          {tools.length > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExpandAll}
+                className="text-xs opacity-80 hover:opacity-100 transition-opacity"
+              >
+                Expand All
+              </button>
+              <button
+                onClick={handleCollapseAll}
+                className="text-xs opacity-80 hover:opacity-100 transition-opacity"
+              >
+                Collapse All
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Tools List */}
