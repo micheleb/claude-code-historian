@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getProjectConversations } from '../lib/api';
-import { formatRelativeDate, cn } from '../lib/utils';
+import { formatRelativeDate, formatTimeRange, cn } from '../lib/utils';
 import { MessageCircle, Clock } from 'lucide-react';
 
 interface ConversationListProps {
@@ -75,7 +75,9 @@ export function ConversationList({
                 <div className="flex items-center gap-3 mt-1 text-xs text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-1">
                     <Clock size={10} />
-                    <span>{formatRelativeDate(conversation.started_at)}</span>
+                    <span>
+                      {formatRelativeDate(conversation.started_at)}, {formatTimeRange(conversation.started_at, conversation.ended_at)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MessageCircle size={10} />
