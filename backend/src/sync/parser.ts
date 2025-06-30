@@ -2,10 +2,13 @@ import { LogEntrySchema } from '../types/log';
 import type { LogEntry } from '../types/log';
 
 export class JSONLParser {
+  private static parseErrors = 0;
+
   /**
    * Parse a JSONL file and return an array of log entries
    */
   static async parseFile(filePath: string): Promise<LogEntry[]> {
+    this.parseErrors = 0;
     const file = Bun.file(filePath);
     const text = await file.text();
     const lines = text.trim().split('\n');
@@ -22,11 +25,23 @@ export class JSONLParser {
         if (parsed.success) {
           entries.push(parsed.data);
         } else {
-          console.warn(`Failed to parse log entry: ${parsed.error.message}`);
+          // Only log detailed errors for debugging, not for every failure
+          if (process.env.DEBUG_PARSING) {
+            console.warn(`Failed to parse log entry:`, JSON.stringify(parsed.error.format(), null, 2));
+            console.warn(`Raw entry:`, JSON.stringify(json, null, 2));
+          }
+          // For normal operation, just count the failures
+          if (!this.parseErrors) this.parseErrors = 0;
+          this.parseErrors++;
         }
       } catch (error) {
         console.warn(`Failed to parse JSON line: ${error}`);
       }
+    }
+    
+    // Log summary if there were any parse errors
+    if (this.parseErrors > 0) {
+      console.log(`Parsed ${entries.length} valid entries, skipped ${this.parseErrors} invalid entries from ${filePath}`);
     }
     
     return entries;

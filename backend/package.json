@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
-    "sync": "bun src/sync/index.ts"
+    "sync": "bun src/sync/index.ts",
+    "wipe-db": "rm claude-logs*"
   },
   "devDependencies": {
     "@types/bun": "latest"

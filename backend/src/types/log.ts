@@ -59,13 +59,13 @@ export const AssistantMessageSchema = BaseMessageSchema.extend({
     stop_sequence: z.string().nullable(),
     usage: z.object({
       input_tokens: z.number(),
-      cache_creation_input_tokens: z.number(),
-      cache_read_input_tokens: z.number(),
+      cache_creation_input_tokens: z.number().optional(),
+      cache_read_input_tokens: z.number().optional(),
       output_tokens: z.number(),
-      service_tier: z.string()
+      service_tier: z.string().nullable()
     })
   }),
-  requestId: z.string(),
+  requestId: z.string().optional(),
 });
 
 // Summary schema

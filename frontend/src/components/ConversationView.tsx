@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MessageBubble } from './MessageBubble';
+import { ToolsBubble } from './ToolsBubble';
 import { getConversation } from '../lib/api';
 import { formatDate } from '../lib/utils';
 import { MessageCircle, Clock, ChevronLeft } from 'lucide-react';
@@ -78,7 +79,13 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-4xl mx-auto">
           {conversation.messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
+            <React.Fragment key={message.id}>
+              <MessageBubble message={message} />
+              {/* Show tools bubble after assistant messages that have tools */}
+              {message.type === 'assistant' && message.tool_uses && message.tool_uses.length > 0 && (
+                <ToolsBubble tools={message.tool_uses} />
+              )}
+            </React.Fragment>
           ))}
           <div ref={messagesEndRef} />
         </div>
