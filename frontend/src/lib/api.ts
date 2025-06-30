@@ -111,3 +111,6 @@ export const getProjectConversationsByPath = async (path: string) => {
 
 export const getConversationBySessionId = (sessionId: string) =>
   api.get<ConversationWithMessages>(`/conversations/by-session/${sessionId}`).then(res => res.data);
+
+export const syncLogs = () =>
+  api.post<{ success: boolean; message: string }>('/sync').then(res => res.data);

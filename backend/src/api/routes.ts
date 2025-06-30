@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { getDatabase } from '../db/database';
+import { SyncService } from '../sync/sync-service';
 
 const app = new Hono();
 
@@ -30,7 +31,7 @@ app.get('/api/projects/:projectId/conversations', (c) => {
      (SELECT COUNT(*) FROM messages WHERE conversation_id = c.id) as message_count
      FROM conversations c
      WHERE c.project_id = ?
-     ORDER BY c.started_at DESC`
+     ORDER BY c.started_at DESC, c.ended_at DESC`
   ).all(projectId);
   
   return c.json(conversations);
@@ -186,7 +187,7 @@ app.get('/api/conversations/by-date', (c) => {
     params.push(projectId);
   }
   
-  sql += ' ORDER BY c.started_at DESC';
+  sql += ' ORDER BY c.started_at DESC, c.ended_at DESC';
   
   const conversations = db.prepare(sql).all(...params);
   
@@ -233,7 +234,7 @@ app.get('/api/projects/by-path/conversations', (c) => {
      FROM conversations c
      JOIN projects p ON c.project_id = p.id
      WHERE p.path = ?
-     ORDER BY c.started_at DESC`
+     ORDER BY c.started_at DESC, c.ended_at DESC`
   ).all(path);
   
   return c.json(conversations);
@@ -279,6 +280,21 @@ app.get('/api/conversations/by-session/:sessionId', (c) => {
     ...conversation,
     messages: parsedMessages
   });
+});
+
+// Trigger sync
+app.post('/api/sync', async (c) => {
+  try {
+    const syncService = new SyncService();
+    await syncService.syncAll();
+    return c.json({ success: true, message: 'Sync completed successfully' });
+  } catch (error) {
+    console.error('Sync error:', error);
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown sync error' 
+    }, 500);
+  }
 });
 
 export default app;

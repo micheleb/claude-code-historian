@@ -4,10 +4,59 @@ import { ProjectList } from './components/ProjectList';
 import { ConversationList } from './components/ConversationList';
 import { ConversationView } from './components/ConversationView';
 import { SearchBar } from './components/SearchBar';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, RefreshCw } from 'lucide-react';
 import { decodePath, isValidPath, isValidSessionId } from './lib/urlUtils';
+import { syncLogs } from './lib/api';
+import { useState } from 'react';
 
 const queryClient = new QueryClient();
+
+// Refresh button component
+function RefreshButton() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleSync = async () => {
+    setIsLoading(true);
+    setStatus('idle');
+    
+    try {
+      await syncLogs();
+      setStatus('success');
+      queryClient.invalidateQueries();
+      setTimeout(() => setStatus('idle'), 2000);
+    } catch (error) {
+      setStatus('error');
+      console.error('Sync failed:', error);
+      setTimeout(() => setStatus('idle'), 3000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleSync}
+      disabled={isLoading}
+      className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+        status === 'success'
+          ? 'text-green-700 bg-green-50 border border-green-200'
+          : status === 'error'
+          ? 'text-red-700 bg-red-50 border border-red-200'
+          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+      title="Sync Claude logs from ~/.claude/ directory"
+    >
+      <RefreshCw 
+        size={16} 
+        className={`${isLoading ? 'animate-spin' : ''} ${
+          status === 'success' ? 'text-green-600' : status === 'error' ? 'text-red-600' : ''
+        }`} 
+      />
+      {isLoading ? 'Syncing...' : status === 'success' ? 'Synced!' : status === 'error' ? 'Failed' : 'Refresh'}
+    </button>
+  );
+}
 
 // Home page component (project list only)
 function HomePage() {
@@ -120,8 +169,11 @@ function App() {
                   Claude Code Historian
                 </h1>
               </div>
-              <div className="w-96">
-                <SearchBar onSearch={(query) => console.log('Search:', query)} />
+              <div className="flex items-center gap-4">
+                <RefreshButton />
+                <div className="w-96">
+                  <SearchBar onSearch={(query) => console.log('Search:', query)} />
+                </div>
               </div>
             </div>
           </header>
