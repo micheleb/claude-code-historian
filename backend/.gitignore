@@ -178,3 +178,6 @@ dist
 *.db
 *.db-shm
 *.db-wal
+
+# Tests
+test-results/

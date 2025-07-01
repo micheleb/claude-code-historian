@@ -53,9 +53,6 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
           }, 2000);
         }
       }, 100);
-    } else {
-      // Default behavior: scroll to bottom
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [conversation?.messages, targetMessageId]);
 
