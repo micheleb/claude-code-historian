@@ -1,4 +1,4 @@
-import { useEffect, useRef, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -8,7 +8,7 @@ import { ScrollToTopButton } from './ScrollToTopButton';
 import { getConversationBySessionId } from '../lib/api';
 import { formatDate } from '../lib/utils';
 import { triggerGlobalExpandAtom, isGlobalLoadingAtom } from '../stores/expandCollapseStore';
-import { MessageCircle, Clock, ChevronLeft, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { MessageCircle, Clock, ChevronLeft, ChevronDown, ChevronUp, Loader2, Share } from 'lucide-react';
 
 interface ConversationViewProps {
   sessionId: string;
@@ -25,6 +25,7 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
   const triggerGlobalExpand = useSetAtom(triggerGlobalExpandAtom);
   const isGlobalLoading = useAtomValue(isGlobalLoadingAtom);
   const [isPending, startTransition] = useTransition();
+  const [isSharing, setIsSharing] = useState(false);
   
   // Extract target message from URL hash
   const targetMessageId = location.hash.replace('#message-', '');
@@ -96,6 +97,22 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
     });
   };
 
+  const handleShare = async () => {
+    if (!conversation) return;
+    
+    setIsSharing(true);
+    try {
+      // Import the share function lazily to keep bundle size down
+      const { shareConversation } = await import('../lib/shareConversation');
+      await shareConversation(conversation, encodedProjectPath || '');
+    } catch (error) {
+      console.error('Error sharing conversation:', error);
+      // Could add a toast notification here
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full" data-testid="conversation-view">
       {/* Header */}
@@ -145,6 +162,20 @@ export function ConversationView({ sessionId }: ConversationViewProps) {
                 <ChevronUp size={12} />
               )}
               Collapse All
+            </button>
+            
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              disabled={isSharing}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSharing ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Share size={12} />
+              )}
+              Share
             </button>
           </div>
         </div>

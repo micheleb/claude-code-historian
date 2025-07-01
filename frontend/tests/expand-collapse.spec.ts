@@ -181,7 +181,6 @@ test.describe('Expand/Collapse Functionality', () => {
   });
 
   test('individual ToolsBubble expand buttons should only affect their own tools', async ({ page }) => {
-    // Wait for ToolsBubbles to be present
     await page.waitForSelector('div:has-text("Tools Used")', { timeout: 5000 });
     await expect(page.getByText('Conversations', { exact: true })).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('Test conversation summary', { exact: true })).toHaveCount(2)
@@ -190,7 +189,6 @@ test.describe('Expand/Collapse Functionality', () => {
     const firstBubble = page.getByText("TestTarget1Tool1").locator('..').locator('..').locator('..').locator('..');
     const secondBubble = page.getByText("TestTarget2Tool1").locator('..').locator('..').locator('..').locator('..');
 
-    // Verify both bubbles are present
     await expect(firstBubble.locator('div:has-text("Tools Used")').first()).toBeVisible();
     await expect(secondBubble.locator('div:has-text("Tools Used")').first()).toBeVisible();
     
@@ -238,12 +236,6 @@ test.describe('Expand/Collapse Functionality', () => {
       secondBubbleToolsAfterClick.push(isExpanded);
     }
     
-    // Debug: Log the actual states for troubleshooting
-    console.log('TestTarget1 bubble before:', firstBubbleToolsInitiallyExpanded);
-    console.log('TestTarget1 bubble after:', firstBubbleToolsAfterClick);
-    console.log('TestTarget2 bubble before:', secondBubbleToolsInitiallyExpanded);
-    console.log('TestTarget2 bubble after:', secondBubbleToolsAfterClick);
-    
     // Verify that TestTarget2 bubble tools are unchanged
     expect(secondBubbleToolsAfterClick).toEqual(secondBubbleToolsInitiallyExpanded);
     
@@ -252,10 +244,8 @@ test.describe('Expand/Collapse Functionality', () => {
   });
 
   test('global expand all should expand all ToolsBubbles', async ({ page }) => {
-    // Wait for ToolsBubbles to be present
     await page.waitForSelector('div:has-text("Tools Used")', { timeout: 5000 });
     
-    // Use the same selector strategy as the first test
     const firstBubble = page.getByText("TestTarget1Tool1").locator('..').locator('..').locator('..').locator('..');
     const secondBubble = page.getByText("TestTarget2Tool1").locator('..').locator('..').locator('..').locator('..');
     
@@ -283,10 +273,8 @@ test.describe('Expand/Collapse Functionality', () => {
   });
 
   test('global collapse all should collapse all ToolsBubbles', async ({ page }) => {
-    // Wait for ToolsBubbles to be present
     await page.waitForSelector('div:has-text("Tools Used")', { timeout: 5000 });
     
-    // Use the same selector strategy as the first test
     const firstBubble = page.getByText("TestTarget1Tool1").locator('..').locator('..').locator('..').locator('..');
     const secondBubble = page.getByText("TestTarget2Tool1").locator('..').locator('..').locator('..').locator('..');
     
