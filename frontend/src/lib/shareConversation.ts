@@ -309,6 +309,19 @@ function getInlineStyles(): string {
       padding-left: 24px;
     }
     
+    .message-content li {
+      margin: 4px 0;
+      list-style-position: outside;
+    }
+    
+    .message-content ul li {
+      list-style-type: disc;
+    }
+    
+    .message-content ol li {
+      list-style-type: decimal;
+    }
+    
     .message-content table {
       border-collapse: collapse;
       width: 100%;
@@ -429,6 +442,25 @@ function getInlineStyles(): string {
       font-weight: 600;
     }
     
+    .command-message {
+      background-color: #f8f9fa;
+      border-left: 4px solid #007bff;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 4px 0;
+    }
+    
+    .command-title {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 4px;
+    }
+    
+    .command-content {
+      color: #4a5568;
+      margin-top: 4px;
+    }
+    
     footer {
       margin-top: 40px;
       padding-top: 20px;
@@ -481,6 +513,15 @@ function getInlineStyles(): string {
 }
 
 function formatContent(content: string): string {
+  // Check for command messages first
+  const isCommandMessage = 
+    content.startsWith('<command-name>') && 
+    content.includes('<command-message>');
+  
+  if (isCommandMessage) {
+    return formatCommandMessage(content);
+  }
+  
   // Basic markdown parsing
   let html = escapeHtml(content);
   
@@ -507,10 +548,16 @@ function formatContent(content: string): string {
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
   
-  // Lists
+  // Lists - handle bullet points
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+  html = html.replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>');
+  
+  // Lists - handle numbered lists
   html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*?<\/li>\s*)+/gs, (match) => {
+    // Only wrap in <ol> if not already wrapped in <ul>
+    return match.includes('<ul>') ? match : `<ol>${match}</ol>`;
+  });
   
   // Paragraphs
   html = html.split('\n\n').map(para => {
@@ -615,4 +662,27 @@ function renderTodoList(todos: TodoItem[]): string {
       `).join('')}
     </div>
   `;
+}
+
+function formatCommandMessage(content: string): string {
+  const commandMessageMatch = content.match(/<command-message>(.*?)<\/command-message>/);
+  const commandNameMatch = content.match(/<command-name>(.*?)<\/command-name>/);
+  
+  const commandMessage = commandMessageMatch?.[1] || '';
+  const commandName = commandNameMatch?.[1] || '';
+  
+  if (commandName === 'clear') {
+    return `
+      <div class="command-message">
+        <div class="command-title">Clear context</div>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="command-message">
+        <div class="command-title">Run ${escapeHtml(commandName)}</div>
+        <div class="command-content">${escapeHtml(commandMessage)}</div>
+      </div>
+    `;
+  }
 }
