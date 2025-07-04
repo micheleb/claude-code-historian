@@ -282,6 +282,30 @@ export class SyncService {
     return hasOnlyThinking;
   }
 
+  private isLocalCommandStdoutOnly(entry: UserMessage | AssistantMessage): boolean {
+    // Check if the message contains only <local-command-stdout></local-command-stdout>
+    let content = '';
+    
+    if (entry.type === 'user') {
+      if (typeof entry.message.content === 'string') {
+        content = entry.message.content;
+      } else if (Array.isArray(entry.message.content)) {
+        content = entry.message.content
+          .map(c => c.text || '')
+          .join('');
+      }
+    } else if (entry.type === 'assistant') {
+      content = entry.message.content
+        .filter(c => c.type === 'text')
+        .map(c => c.text)
+        .join('');
+    }
+    
+    // Check if content is exactly <local-command-stdout></local-command-stdout> (with optional whitespace)
+    const trimmed = content.trim();
+    return trimmed === '<local-command-stdout></local-command-stdout>';
+  }
+
   private async insertMessage(entry: UserMessage | AssistantMessage, conversationId: number) {
     // Skip tool call user messages
     if (entry.type === 'user' && this.isToolCallMessage(entry as UserMessage)) {
@@ -291,6 +315,12 @@ export class SyncService {
     
     // Skip thinking-only assistant messages
     if (entry.type === 'assistant' && this.isThinkingOnlyMessage(entry as AssistantMessage)) {
+      return;
+    }
+    
+    // Skip messages containing only <local-command-stdout></local-command-stdout>
+    if (this.isLocalCommandStdoutOnly(entry)) {
+      console.log(`Skipping local-command-stdout only message: ${entry.uuid}`);
       return;
     }
     

@@ -16,10 +16,10 @@ interface TodoItem {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.type === 'user';
   
-  // Detect command messages (first message with command tags)
-  const isCommandMessage = message.parent_uuid === null && 
-    message.content.includes('<command-message>') && 
-    message.content.includes('<command-name>');
+  // Detect command messages
+  const isCommandMessage = 
+    message.content.startsWith('<command-name>') && 
+    message.content.includes('<command-message>');
   
   // Detect TodoWrite messages (JSON with todos array)
   const isTodoWriteMessage = message.content.includes('"todos"') && 
@@ -117,12 +117,20 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           </div>
         ) : isCommandMessage ? (
           <div>
-            <div className="font-semibold mb-1">
-              Run {getCommandInfo()?.commandName}
-            </div>
-            <div className="text-inherit">
-              {getCommandInfo()?.commandMessage}
-            </div>
+            {getCommandInfo()?.commandName === 'clear' ? (
+              <div className="font-semibold">
+                Clear context
+              </div>
+            ) : (
+              <>
+                <div className="font-semibold mb-1">
+                  Run {getCommandInfo()?.commandName}
+                </div>
+                <div className="text-inherit">
+                  {getCommandInfo()?.commandMessage}
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <MarkdownRenderer 
