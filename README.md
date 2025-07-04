@@ -12,7 +12,12 @@ Features a Bun-powered backend with SQLite database and a React-based SPA fronte
 - 💬 Chat-like UI inspired by messaging apps
 - 🔧 Collapsible tool use visualization
 - 🔍 Search across all conversations
+- 🌍 Share self-contained HTML pages from your conversations
 - 📅 Date navigation (coming soon)
+
+<div align="center">
+<img src="screenshot.png" alt="Claude Code Historian Dashboard" width="600px">
+</div>
 
 ## Prerequisites
 
