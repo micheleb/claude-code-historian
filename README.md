@@ -1,6 +1,10 @@
 # Claude Code Historian
 
-A dashboard to visualize and explore Claude's conversation logs. Features a Bun-powered backend with SQLite database and a React-based SPA frontend.
+A dashboard to visualize and explore Claude's conversation logs.
+
+Vibe coded with Claude Code, of course.
+
+Features a Bun-powered backend with SQLite database and a React-based SPA frontend.
 
 ## Features
 
@@ -9,7 +13,6 @@ A dashboard to visualize and explore Claude's conversation logs. Features a Bun-
 - 🔧 Collapsible tool use visualization
 - 🔍 Search across all conversations
 - 📅 Date navigation (coming soon)
-- ✅ Todo tracking per conversation
 
 ## Prerequisites
 
