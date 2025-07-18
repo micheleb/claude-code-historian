@@ -25,7 +25,25 @@ Features a Bun-powered backend with SQLite database and a React-based SPA fronte
 
 ## Getting Started
 
-### 1. Backend Setup
+### Quick Start
+
+```bash
+# Install dependencies for both backend and frontend
+bun install
+
+# First, sync your Claude logs to the database
+cd backend && bun run sync
+
+# Start both backend and frontend
+# From the top-level folder
+bun dev
+```
+
+The API will be available at http://localhost:3001 and the frontend at http://localhost:5173
+
+### Manual Setup
+
+#### 1. Backend Setup
 
 ```bash
 cd backend
@@ -40,7 +58,7 @@ bun run start
 
 The API will be available at http://localhost:3001
 
-### 2. Frontend Setup
+#### 2. Frontend Setup
 
 In a new terminal:
 

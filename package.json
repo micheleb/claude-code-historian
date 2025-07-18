@@ -1,0 +1,15 @@
+{
+  "name": "claude-code-historian",
+  "version": "1.0.0",
+  "description": "A full-stack web application for visualizing and exploring Claude's conversation logs",
+  "scripts": {
+    "install": "cd backend && bun install && cd ../frontend && bun install",
+    "dev": "concurrently \"cd backend && bun run dev\" \"cd frontend && bun run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}
